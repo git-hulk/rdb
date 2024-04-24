@@ -74,7 +74,8 @@ type RedisObject interface {
 
 // BaseObject is basement of redis object
 type BaseObject struct {
-	DB         int         `json:"db"`                   // DB is db index of redis object
+	DB         int         `json:"db"` // DB is db index of redis object
+	TTL        int64       `json:"ttl"`
 	Key        string      `json:"key"`                  // Key is key of redis object
 	Expiration *time.Time  `json:"expiration,omitempty"` // Expiration is expiration time, expiration of persistent object is nil
 	Size       int         `json:"size"`                 // Size is rdb value size in Byte
@@ -133,6 +134,9 @@ func (o *StringObject) MarshalJSON() ([]byte, error) {
 		BaseObject: o.BaseObject,
 		Value:      string(o.Value),
 	}
+	if o.GetExpiration() != nil {
+		o2.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
+	}
 	return json.Marshal(o2)
 }
 
@@ -164,6 +168,9 @@ func (o *ListObject) MarshalJSON() ([]byte, error) {
 	}{
 		BaseObject: o.BaseObject,
 		Values:     values,
+	}
+	if o.GetExpiration() != nil {
+		o.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
 	}
 	return json.Marshal(o2)
 }
@@ -197,6 +204,9 @@ func (o *HashObject) MarshalJSON() ([]byte, error) {
 		BaseObject: o.BaseObject,
 		Hash:       m,
 	}
+	if o.GetExpiration() != nil {
+		o.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
+	}
 	return json.Marshal(o2)
 }
 
@@ -228,6 +238,9 @@ func (o *SetObject) MarshalJSON() ([]byte, error) {
 	}{
 		BaseObject: o.BaseObject,
 		Members:    values,
+	}
+	if o.GetExpiration() != nil {
+		o.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
 	}
 	return json.Marshal(o2)
 }
@@ -274,6 +287,9 @@ func (o *AuxObject) MarshalJSON() ([]byte, error) {
 		BaseObject: o.BaseObject,
 		Value:      string(o.Value),
 	}
+	if o.GetExpiration() != nil {
+		o.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
+	}
 	return json.Marshal(o2)
 }
 
@@ -311,6 +327,9 @@ func (o *ModuleTypeObject) MarshalJSON() ([]byte, error) {
 		BaseObject: o.BaseObject,
 		ModuleType: o.ModuleType,
 		Value:      o.Value,
+	}
+	if o.GetExpiration() != nil {
+		o.TTL = int64(o.GetExpiration().Sub(time.Now()).Seconds())
 	}
 	return json.Marshal(o2)
 }
